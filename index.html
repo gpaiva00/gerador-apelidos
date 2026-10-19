@@ -79,7 +79,7 @@
       }
     });
     copy.addEventListener('click', async () => {
-      try { await navigator.clipboard.writeText(nickname.textContent); copy.innerHTML = checkIcon; copy.setAttribute('aria-label', 'Copiado!'); copy.setAttribute('title', 'Copiado!'); setTimeout(() => { copy.innerHTML = copyIcon; copy.setAttribute('aria-label', 'Copiar apelido'); copy.setAttribute('title', 'Copiar apelido'); }, 1000); }
+      try { await navigator.clipboard.writeText(`Fala aí, meu ${nickname.textContent}`); copy.innerHTML = checkIcon; copy.setAttribute('aria-label', 'Copiado!'); copy.setAttribute('title', 'Copiado!'); setTimeout(() => { copy.innerHTML = copyIcon; copy.setAttribute('aria-label', 'Copiar apelido'); copy.setAttribute('title', 'Copiar apelido'); }, 1000); }
       catch { copy.setAttribute('aria-label', 'Não foi possível copiar'); copy.setAttribute('title', 'Não foi possível copiar'); setTimeout(() => { copy.setAttribute('aria-label', 'Copiar apelido'); copy.setAttribute('title', 'Copiar apelido'); }, 1200); }
     });
     document.querySelectorAll('.category').forEach(button => button.addEventListener('click', () => {
