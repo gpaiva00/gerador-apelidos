@@ -12,9 +12,10 @@
     h1 { margin:0 0 24px; font-size:clamp(2rem,7vw,3.4rem); letter-spacing:-.045em; font-weight:750; }
     .card { padding:34px 24px 26px; border:1px solid var(--line); border-radius:24px; background:rgba(27,31,34,.88); box-shadow:0 24px 70px rgba(0,0,0,.3); }
     #nickname { min-height:1.25em; margin:0 0 28px; color:var(--accent); font-size:clamp(2rem,10vw,5.2rem); line-height:1.08; letter-spacing:-.045em; font-weight:800; overflow-wrap:normal; word-break:normal; hyphens:none; }
-    .actions { display:flex; flex-direction:column; align-items:center; gap:10px; }
+    .actions { display:flex; justify-content:center; align-items:center; gap:10px; }
     .actions #draw { width:min(100%, 320px); }
-    .actions #copy { width:min(100%, 190px); }
+    .actions #copy { width:50px; height:50px; padding:0; display:grid; place-items:center; }
+    #copy svg { width:21px; height:21px; }
     button { border:0; border-radius:999px; padding:13px 20px; color:#161616; background:var(--accent); font:inherit; font-weight:800; cursor:pointer; transition:transform .15s ease, filter .15s ease; }
     button:hover { filter:brightness(1.08); transform:translateY(-1px); }
     button:active { transform:translateY(1px); }
@@ -33,7 +34,12 @@
       <p id="nickname">Big</p>
       <div class="actions">
         <button id="draw" type="button">Sortear apelido</button>
-        <button id="copy" class="secondary" type="button">Copiar</button>
+        <button id="copy" class="secondary" type="button" aria-label="Copiar apelido" title="Copiar apelido">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="9" y="9" width="11" height="11" rx="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+        </button>
       </div>
       <div class="categories" aria-label="Categorias">
         <button class="category active" data-category="todos" type="button">Todos</button>
@@ -71,8 +77,8 @@
       }
     });
     copy.addEventListener('click', async () => {
-      try { await navigator.clipboard.writeText(nickname.textContent); copy.textContent = 'Copiado!'; setTimeout(() => copy.textContent = 'Copiar', 1000); }
-      catch { copy.textContent = 'Selecione o apelido'; setTimeout(() => copy.textContent = 'Copiar', 1200); }
+      try { await navigator.clipboard.writeText(nickname.textContent); copy.setAttribute('aria-label', 'Copiado!'); copy.setAttribute('title', 'Copiado!'); setTimeout(() => { copy.setAttribute('aria-label', 'Copiar apelido'); copy.setAttribute('title', 'Copiar apelido'); }, 1000); }
+      catch { copy.setAttribute('aria-label', 'Não foi possível copiar'); copy.setAttribute('title', 'Não foi possível copiar'); setTimeout(() => { copy.setAttribute('aria-label', 'Copiar apelido'); copy.setAttribute('title', 'Copiar apelido'); }, 1200); }
     });
     document.querySelectorAll('.category').forEach(button => button.addEventListener('click', () => {
       categoria = button.dataset.category;
