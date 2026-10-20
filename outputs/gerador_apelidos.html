@@ -97,15 +97,44 @@
     const copyIcon = copy.innerHTML;
     const checkIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>';
     let categoria = 'todos';
-    let recentes = [];
+    const ciclosDeSorteio = new Map();
     const todos = () => categoria === 'todos' ? Object.values(apelidos).flat() : apelidos[categoria];
     let carregandoAprovados = false;
+    function embaralhar(lista) {
+      const resultado = [...lista];
+      for (let indice = resultado.length - 1; indice > 0; indice -= 1) {
+        const troca = Math.floor(Math.random() * (indice + 1));
+        [resultado[indice], resultado[troca]] = [resultado[troca], resultado[indice]];
+      }
+      return resultado;
+    }
+    function proximoDoCiclo(lista, chave) {
+      const nomes = [...new Set(lista)];
+      let ciclo = ciclosDeSorteio.get(chave);
+      if (!ciclo) {
+        ciclo = { restantes: [], exibidos: new Set() };
+        ciclosDeSorteio.set(chave, ciclo);
+      }
+
+      const disponiveis = nomes.filter(nome => !ciclo.exibidos.has(nome) && !ciclo.restantes.includes(nome));
+      ciclo.restantes.push(...embaralhar(disponiveis));
+      ciclo.restantes = ciclo.restantes.filter(nome => nomes.includes(nome));
+
+      if (!ciclo.restantes.length) {
+        ciclo.exibidos.clear();
+        ciclo.restantes = embaralhar(nomes);
+        if (ciclo.restantes.length > 1 && ciclo.restantes[0] === nickname.textContent) {
+          [ciclo.restantes[0], ciclo.restantes[1]] = [ciclo.restantes[1], ciclo.restantes[0]];
+        }
+      }
+
+      const escolhido = ciclo.restantes.shift();
+      ciclo.exibidos.add(escolhido);
+      return escolhido;
+    }
     function sortear() {
-      const disponiveis = todos().filter(item => !recentes.includes(item));
-      const lista = disponiveis.length ? disponiveis : todos();
-      const escolhido = lista[Math.floor(Math.random() * lista.length)];
+      const escolhido = proximoDoCiclo(todos(), categoria);
       nickname.textContent = escolhido;
-      recentes = [escolhido, ...recentes.filter(item => item !== escolhido)].slice(0, Math.min(10, Math.floor(todos().length / 3)));
       ajustarTamanhoDoApelido();
     }
     function ajustarTamanhoDoApelido() {
@@ -178,7 +207,6 @@
     document.querySelectorAll('.category').forEach(button => button.addEventListener('click', () => {
       categoria = button.dataset.category;
       document.querySelectorAll('.category').forEach(item => item.classList.toggle('active', item === button));
-      recentes = [];
       sortear();
     }));
   </script>
