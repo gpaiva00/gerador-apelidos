@@ -1,0 +1,5 @@
+{
+  "functions": {
+    "api/sugerir.js": { "maxDuration": 10 }
+  }
+}

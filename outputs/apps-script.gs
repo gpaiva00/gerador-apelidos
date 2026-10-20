@@ -4,6 +4,8 @@ const NOME_DO_ARQUIVO = 'sugestoes-apelidos.csv';
 function doPost(e) {
   try {
     const dados = JSON.parse(e.postData.contents || '{}');
+    const segredo = PropertiesService.getScriptProperties().getProperty('VERCEL_SHARED_SECRET');
+    if (!segredo || dados.token !== segredo) return resposta({ ok: false, erro: 'Não autorizado.' });
     const apelido = validarApelido(dados.apelido);
     const cache = CacheService.getScriptCache();
     if (cache.get('ultima-sugestao')) return resposta({ ok: false, erro: 'Aguarde alguns segundos antes de enviar outra sugestão.' });
