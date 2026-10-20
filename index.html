@@ -11,7 +11,7 @@
     main { width:min(100%, 560px); text-align:center; }
     h1 { margin:0 0 24px; font-size:clamp(2rem,7vw,3.4rem); letter-spacing:-.045em; font-weight:750; }
     .card { padding:34px 24px 26px; border:1px solid var(--line); border-radius:24px; background:rgba(27,31,34,.88); box-shadow:0 24px 70px rgba(0,0,0,.3); }
-    #nickname { width:100%; max-width:100%; min-height:1.25em; margin:0 auto 28px; color:var(--accent); font-size:clamp(2rem,10vw,5.2rem); line-height:1.08; letter-spacing:-.045em; font-weight:800; overflow-wrap:anywhere; word-break:break-word; hyphens:none; }
+    #nickname { width:100%; max-width:100%; height:clamp(4rem,11vw,6rem); margin:0 auto 28px; display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:clamp(2rem,10vw,5.2rem); line-height:1.08; letter-spacing:-.045em; font-weight:800; white-space:nowrap; overflow:visible; text-overflow:clip; hyphens:none; }
     .actions { display:flex; justify-content:center; align-items:center; gap:10px; }
     .actions #draw { width:min(100%, 320px); }
     .actions #copy { width:50px; height:50px; padding:0; display:grid; place-items:center; }
@@ -104,7 +104,19 @@
       const escolhido = lista[Math.floor(Math.random() * lista.length)];
       nickname.textContent = escolhido;
       recentes = [escolhido, ...recentes.filter(item => item !== escolhido)].slice(0, Math.min(10, Math.floor(todos().length / 3)));
+      ajustarTamanhoDoApelido();
     }
+    function ajustarTamanhoDoApelido() {
+      nickname.style.fontSize = '';
+      let tamanho = parseFloat(getComputedStyle(nickname).fontSize);
+      const tamanhoMinimo = 18;
+      while (nickname.scrollWidth > nickname.clientWidth && tamanho > tamanhoMinimo) {
+        tamanho -= 1;
+        nickname.style.fontSize = `${tamanho}px`;
+      }
+    }
+    window.addEventListener('resize', ajustarTamanhoDoApelido);
+    ajustarTamanhoDoApelido();
     draw.addEventListener('click', sortear);
     document.querySelector('#open-suggest').addEventListener('click', () => { suggestStatus.textContent = ''; suggestion.value = ''; suggestDialog.showModal(); setTimeout(() => suggestion.focus(), 50); });
     document.querySelector('#close-suggest').addEventListener('click', () => suggestDialog.close());
@@ -131,7 +143,7 @@
       finally { submitSuggest.disabled = false; submitSuggest.textContent = 'Sugerir'; }
     });
     document.addEventListener('keydown', event => {
-      if (event.code === 'Space' && !event.repeat && !['INPUT','TEXTAREA','BUTTON'].includes(document.activeElement.tagName)) {
+      if (event.code === 'Space' && !event.repeat && !suggestDialog.open && !['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) {
         event.preventDefault();
         sortear();
       }
