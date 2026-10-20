@@ -23,7 +23,7 @@
     .categories { display:flex; justify-content:center; flex-wrap:wrap; gap:8px; margin-top:22px; }
     .category { border:1px solid var(--line); border-radius:999px; padding:7px 11px; color:var(--muted); background:transparent; font-size:.8rem; cursor:pointer; }
     .category.active { color:#171717; border-color:var(--accent); background:var(--accent); }
-    .hint { margin:18px 0 0; color:var(--muted); font-size:.78rem; }
+    .hint { margin:16px 0 0; color:var(--muted); font-size:.78rem; }
     .suggest { margin-top:18px; color:var(--muted); background:none; border:0; padding:4px; font-size:.78rem; font-weight:600; cursor:pointer; }
     .suggest:hover { color:var(--accent); filter:none; transform:none; }
     dialog { width:min( calc(100% - 32px), 420px); padding:0; border:1px solid var(--line); border-radius:20px; color:var(--text); background:#1b1f22; box-shadow:0 24px 80px #000b; }
@@ -60,9 +60,9 @@
         <button class="category" data-category="respeito" type="button">Respeito</button>
         <button class="category" data-category="criativos" type="button">Criativos</button>
       </div>
-      <p class="hint">Dica: pressione a barra de espaço para sortear</p>
       <button class="suggest" id="open-suggest" type="button">Sugerir um apelido</button>
     </section>
+    <p class="hint">Dica: pressione a barra de espaço para sortear</p>
   </main>
   <dialog id="suggest-dialog">
     <form class="modal" id="suggest-form" method="dialog">
