@@ -1,10 +1,11 @@
 const APPS_SCRIPT_URL = process.env.APPS_SCRIPT_URL;
 const APPS_SCRIPT_SECRET = process.env.APPS_SCRIPT_SECRET;
 
-function json(res, status, body) {
+function json(res, status, body, methods = 'POST, OPTIONS') {
   res.status(status).setHeader('Access-Control-Allow-Origin', 'https://gpaiva00.github.io');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', methods);
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Vary', 'Origin');
   return res.status(status).json(body);
 }
 

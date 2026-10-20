@@ -6,6 +6,7 @@ function doPost(e) {
     const dados = JSON.parse(e.postData.contents || '{}');
     const segredo = PropertiesService.getScriptProperties().getProperty('VERCEL_SHARED_SECRET');
     if (!segredo || dados.token !== segredo) return resposta({ ok: false, erro: 'Não autorizado.' });
+    if (dados.acao === 'listar-aprovados') return listarAprovados();
     const apelido = validarApelido(dados.apelido);
     const cache = CacheService.getScriptCache();
     if (cache.get('ultima-sugestao')) return resposta({ ok: false, erro: 'Aguarde alguns segundos antes de enviar outra sugestão.' });
@@ -29,12 +30,60 @@ function doPost(e) {
 }
 
 function doGet() {
-  return resposta({ ok: true, mensagem: 'Gerador de apelidos ativo.' });
+  return resposta({ ok: false, erro: 'Método não permitido.' });
+}
+
+function listarAprovados() {
+  const arquivo = obterArquivo();
+  if (!arquivo) return resposta({ ok: true, apelidos: [], atualizadoEm: new Date().toISOString() });
+
+  const linhas = parseCsv(arquivo.getBlob().getDataAsString());
+  const apelidos = [];
+  const vistos = {};
+  linhas.slice(1).forEach(linha => {
+    const apelido = String(linha[0] || '').trim();
+    const status = String(linha[2] || '').trim().toLowerCase();
+    const chave = apelido.toLocaleLowerCase('pt-BR');
+    if (apelido && status === 'aprovado' && !vistos[chave]) {
+      vistos[chave] = true;
+      apelidos.push(apelido);
+    }
+  });
+  return resposta({ ok: true, apelidos, atualizadoEm: new Date().toISOString() });
 }
 
 function obterPasta() {
   const pastas = DriveApp.getFoldersByName(NOME_DA_PASTA);
   return pastas.hasNext() ? pastas.next() : DriveApp.createFolder(NOME_DA_PASTA);
+}
+
+function obterArquivo() {
+  const pasta = obterPasta();
+  const arquivos = pasta.getFilesByName(NOME_DO_ARQUIVO);
+  return arquivos.hasNext() ? arquivos.next() : null;
+}
+
+function parseCsv(conteudo) {
+  const linhas = [];
+  let linha = [];
+  let campo = '';
+  let entreAspas = false;
+  for (let i = 0; i < conteudo.length; i += 1) {
+    const caractere = conteudo[i];
+    if (caractere === '"') {
+      if (entreAspas && conteudo[i + 1] === '"') { campo += '"'; i += 1; }
+      else entreAspas = !entreAspas;
+    } else if (caractere === ',' && !entreAspas) {
+      linha.push(campo); campo = '';
+    } else if ((caractere === '\n' || caractere === '\r') && !entreAspas) {
+      if (caractere === '\r' && conteudo[i + 1] === '\n') i += 1;
+      linha.push(campo); campo = '';
+      if (linha.some(valor => valor !== '')) linhas.push(linha);
+      linha = [];
+    } else campo += caractere;
+  }
+  if (campo || linha.length) { linha.push(campo); linhas.push(linha); }
+  return linhas;
 }
 
 function validarApelido(valor) {

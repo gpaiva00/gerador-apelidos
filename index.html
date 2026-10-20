@@ -80,6 +80,7 @@
   </dialog>
   <script>
     const SUGGESTION_API_URL = 'https://gerador-apelidos-backend.vercel.app/api/sugerir';
+    const APPROVED_NICKNAMES_API_URL = 'https://gerador-apelidos-backend.vercel.app/api/apelidos';
     const apelidos = {
       classicos: ['Big','Monstro','Mestre','Doutor','Maninho','Chefe','Patrão','Professor','Lenda','Craque','Campeão','Gigante','Brabo','Brabão','Rei','Ídolo','Figura','Parceiro','Comandante','Comandantezinho','Mago','Gênio','Fenômeno','Titã','Brutamontes','Camarada','Nobre','Capitão','Líder','Mandachuva'],
       respeito: ['Excelência','Doutor Honorário','Mestre Supremo','Grande Chefe','Professor Pardal','Senhor Respeito','Doutor do Rolê','Embaixador','Ministro','Conselheiro','Magnata','Presidente','Reitor','Diretor','Comandante Geral','Lenda Viva','Patrono','Catedrático','Especialista','Referência','Tubarão','Grande Mestre','Dono da Razão','Chefão','Rei do Pedaço'],
@@ -98,6 +99,7 @@
     let categoria = 'todos';
     let recentes = [];
     const todos = () => categoria === 'todos' ? Object.values(apelidos).flat() : apelidos[categoria];
+    let carregandoAprovados = false;
     function sortear() {
       const disponiveis = todos().filter(item => !recentes.includes(item));
       const lista = disponiveis.length ? disponiveis : todos();
@@ -115,7 +117,28 @@
         nickname.style.fontSize = `${tamanho}px`;
       }
     }
+    async function carregarAprovados() {
+      if (carregandoAprovados) return;
+      carregandoAprovados = true;
+      try {
+        const resposta = await fetch(APPROVED_NICKNAMES_API_URL, { cache:'no-store', signal:AbortSignal.timeout(5000) });
+        const resultado = await resposta.json();
+        if (!resposta.ok || !resultado.ok || !Array.isArray(resultado.apelidos)) return;
+        const existentes = new Set(Object.values(apelidos).flat().map(item => item.toLocaleLowerCase('pt-BR')));
+        apelidos.aprovados = resultado.apelidos.filter(item => typeof item === 'string' && item.trim()).filter(item => {
+          const chave = item.trim().toLocaleLowerCase('pt-BR');
+          if (existentes.has(chave)) return false;
+          existentes.add(chave);
+          return true;
+        });
+        if (categoria === 'todos') ajustarTamanhoDoApelido();
+      } catch { /* A lista embutida continua disponível se a atualização falhar. */ }
+      finally { carregandoAprovados = false; }
+    }
     window.addEventListener('resize', ajustarTamanhoDoApelido);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) carregarAprovados(); });
+    setInterval(carregarAprovados, 60000);
+    carregarAprovados();
     ajustarTamanhoDoApelido();
     draw.addEventListener('click', sortear);
     document.querySelector('#open-suggest').addEventListener('click', () => { suggestStatus.textContent = ''; suggestion.value = ''; suggestDialog.showModal(); setTimeout(() => suggestion.focus(), 50); });
