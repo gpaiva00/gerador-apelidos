@@ -18,6 +18,7 @@
     #copy svg { width:21px; height:21px; }
     button { border:0; border-radius:999px; padding:13px 20px; color:#161616; background:var(--accent); font:inherit; font-weight:800; cursor:pointer; transition:transform .15s ease, filter .15s ease; }
     button:hover { filter:brightness(1.08); transform:translateY(-1px); }
+    button:disabled { cursor:wait; opacity:.65; transform:none; }
     button:active { transform:translateY(1px); }
     button.secondary { color:var(--text); background:#2a3035; border:1px solid var(--line); }
     .categories { display:flex; justify-content:center; flex-wrap:wrap; gap:8px; margin-top:22px; }
@@ -73,7 +74,7 @@
       <p class="status" id="suggest-status" aria-live="polite"></p>
       <div class="modal-actions">
         <button class="secondary" id="close-suggest" type="button">Cancelar</button>
-        <button type="submit">Sugerir</button>
+        <button id="submit-suggest" type="submit">Sugerir</button>
       </div>
     </form>
   </dialog>
@@ -91,6 +92,7 @@
     const suggestForm = document.querySelector('#suggest-form');
     const suggestion = document.querySelector('#suggestion');
     const suggestStatus = document.querySelector('#suggest-status');
+    const submitSuggest = document.querySelector('#submit-suggest');
     const copyIcon = copy.innerHTML;
     const checkIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"></path></svg>';
     let categoria = 'todos';
@@ -111,6 +113,8 @@
       const apelido = suggestion.value.trim();
       if (!apelido) return;
       const payload = { apelido, data: new Date().toISOString(), status: 'Pendente' };
+      submitSuggest.disabled = true;
+      submitSuggest.textContent = 'Enviando...';
       try {
         if (SUGGESTION_API_URL) {
           const resposta = await fetch(SUGGESTION_API_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
@@ -124,6 +128,7 @@
         suggestion.value = '';
         setTimeout(() => suggestDialog.close(), 900);
       } catch { suggestStatus.textContent = 'Não foi possível enviar. Tente novamente.'; }
+      finally { submitSuggest.disabled = false; submitSuggest.textContent = 'Sugerir'; }
     });
     document.addEventListener('keydown', event => {
       if (event.code === 'Space' && !event.repeat && !['INPUT','TEXTAREA','BUTTON'].includes(document.activeElement.tagName)) {
