@@ -78,7 +78,7 @@
     </form>
   </dialog>
   <script>
-    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxUT3JEvCGD8gSBBCwrgb2JWdsBiNuwBCl4hRVJbVIkNozKx9BeTbDflvVT0MaclJYy/exec';
+    const SUGGESTION_API_URL = 'https://gerador-apelidos-backend.vercel.app/api/sugerir';
     const apelidos = {
       classicos: ['Big','Monstro','Mestre','Doutor','Maninho','Chefe','Patrão','Professor','Lenda','Craque','Campeão','Gigante','Brabo','Brabão','Rei','Ídolo','Figura','Parceiro','Comandante','Comandantezinho','Mago','Gênio','Fenômeno','Titã','Brutamontes','Camarada','Nobre','Capitão','Líder','Mandachuva'],
       respeito: ['Excelência','Doutor Honorário','Mestre Supremo','Grande Chefe','Professor Pardal','Senhor Respeito','Doutor do Rolê','Embaixador','Ministro','Conselheiro','Magnata','Presidente','Reitor','Diretor','Comandante Geral','Lenda Viva','Patrono','Catedrático','Especialista','Referência','Tubarão','Grande Mestre','Dono da Razão','Chefão','Rei do Pedaço'],
@@ -112,8 +112,10 @@
       if (!apelido) return;
       const payload = { apelido, data: new Date().toISOString(), status: 'Pendente' };
       try {
-        if (APPS_SCRIPT_URL) {
-          await fetch(APPS_SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(payload) });
+        if (SUGGESTION_API_URL) {
+          const resposta = await fetch(SUGGESTION_API_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+          const resultado = await resposta.json();
+          if (!resposta.ok || !resultado.ok) throw new Error(resultado.erro || 'Não foi possível enviar.');
         } else {
           const pendentes = JSON.parse(localStorage.getItem('apelidos-pendentes') || '[]');
           localStorage.setItem('apelidos-pendentes', JSON.stringify([...pendentes, payload]));
